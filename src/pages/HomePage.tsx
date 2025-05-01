@@ -14,9 +14,12 @@ const HomePage: React.FC = () => {
           </Link>
         </div>
         <div className="flex items-center space-x-4">
+          <Link to="/home" className="text-gray-300 hover:text-white font-bold border-b-2 border-purple-500">Home</Link>
           <Link to="/profile" className="text-gray-300 hover:text-white">Profile</Link>
           <Link to="/library" className="text-gray-300 hover:text-white">Library</Link>
           <Link to="/settings" className="text-gray-300 hover:text-white">Settings</Link>
+          <Link to="/" className="text-gray-300 hover:text-white">Logout</Link>
+
         </div>
       </header>
       

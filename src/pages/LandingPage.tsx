@@ -10,7 +10,7 @@ const LandingPage: React.FC = () => {
           MusikMatch
         </Link>
         <div className="flex space-x-6">
-          <Link to="/" className="text-white hover:text-purple-300 transition-colors">
+          <Link to="/home" className="text-white hover:text-purple-300 transition-colors">
             Home
           </Link>
           <Link to="/login" className="text-white hover:text-purple-300 transition-colors">
