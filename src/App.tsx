@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import HomePage from './pages/HomePage';
 import LibraryPage from './pages/LibraryPage';
+import SettingsPage from './pages/SettingsPage';
 import Solo from './pages/game/solo';
 import GamePlay from './pages/game/play';
 import Multiplayer from './pages/game/multiplayer';
@@ -24,6 +25,7 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/library" element={<LibraryPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             <Route path="/game/solo" element={<Solo />} />
             <Route path="/game/play" element={<GamePlay />} />
             <Route path="/game/multiplayer" element={<Multiplayer />} />
