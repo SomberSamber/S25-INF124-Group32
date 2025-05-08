@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const categories = [
   { key: 'general', label: 'General' },
@@ -315,45 +315,70 @@ const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-gray-900">
-      {/* Sidebar */}
-      <aside className={`w-64 p-6 ${sidebarBg} flex flex-col justify-between`}>
-        <div>
-          <h2 className="text-2xl font-bold text-purple-300 mb-8 tracking-widest">MusikMatch</h2>
-          <nav className="space-y-2">
-            {categories.map(cat => (
-              <button
-                key={cat.key}
-                onClick={() => setSelectedCategory(cat.key)}
-                className={`w-full text-left px-4 py-2 rounded-lg transition-colors duration-200 text-lg font-medium tracking-wide ${selectedCategory === cat.key ? 'bg-purple-700 text-white' : 'text-purple-200 hover:bg-purple-800'}`}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </nav>
+    <div className="min-h-screen bg-gray-900 text-white overflow-x-hidden">
+      {/* Header navigation */}
+      <header className="relative z-10 w-full flex justify-between items-center p-4 border-b border-gray-800">
+        <div className="flex items-center">
+          <Link to="/">
+            <div className="text-purple-400 font-bold text-2xl">
+              MusikMatch
+            </div>
+          </Link>
         </div>
-        <button
-          onClick={() => navigate('/home')}
-          className="mt-8 bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition-colors text-lg font-semibold"
-        >
-          Back to Home
-        </button>
-      </aside>
-      {/* Main Panel */}
-      <main className={`flex-1 flex items-center justify-center p-12 ${gradientBg}`}>
-        <div className="w-full max-w-2xl rounded-3xl shadow-2xl p-10 bg-opacity-80" style={{background: 'linear-gradient(135deg, #7c3aed 60%, #a78bfa 100%)'}}>
-          <h1 className="text-4xl font-bold text-white mb-10 tracking-wider text-center drop-shadow-lg">{categories.find(c => c.key === selectedCategory)?.label} Settings</h1>
-          {renderSettings()}
-          <div className="flex justify-end mt-10">
-            <button
-              onClick={() => navigate('/home')}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-xl text-lg font-bold shadow-lg transition-colors"
-            >
-              Save Changes
-            </button>
+        <div className="flex items-center space-x-4">
+          <Link to="/home" className="text-gray-300 hover:text-white">Home</Link>
+          <Link to="/library" className="text-gray-300 hover:text-white">Library</Link>
+          <Link to="/settings" className="text-gray-300 hover:text-white font-bold border-b-2 border-purple-500">Settings</Link>
+          <Link to="/" className="text-gray-300 hover:text-white">Logout</Link>
+        </div>
+      </header>
+
+      {/* Background with gradient */}
+      <div className="fixed inset-0 bg-gradient-to-b from-gray-900 via-indigo-900/40 to-gray-900">
+        <div className="spotlight spotlight-primary"></div>
+        <div className="spotlight spotlight-secondary"></div>
+      </div>
+
+      <div className="relative z-10 flex min-h-[calc(100vh-4rem)] w-full">
+        {/* Sidebar */}
+        <aside className={`w-64 p-6 ${sidebarBg} flex flex-col justify-between shrink-0`}>
+          <div>
+            <h2 className="text-2xl font-bold text-purple-300 mb-8 tracking-widest">Settings</h2>
+            <nav className="space-y-2">
+              {categories.map(cat => (
+                <button
+                  key={cat.key}
+                  onClick={() => setSelectedCategory(cat.key)}
+                  className={`w-full text-left px-4 py-2 rounded-lg transition-colors duration-200 text-lg font-medium tracking-wide ${selectedCategory === cat.key ? 'bg-purple-700 text-white' : 'text-purple-200 hover:bg-purple-800'}`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </nav>
           </div>
-        </div>
-      </main>
+          <button
+            onClick={() => navigate('/home')}
+            className="mt-8 bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition-colors text-lg font-semibold"
+          >
+            Back to Home
+          </button>
+        </aside>
+        {/* Main Panel */}
+        <main className="flex-1 flex items-center justify-center p-12 w-full">
+          <div className="w-full max-w-2xl rounded-3xl shadow-2xl p-10 bg-opacity-80" style={{background: 'linear-gradient(135deg, #7c3aed 60%, #a78bfa 100%)'}}>
+            <h1 className="text-4xl font-bold text-white mb-10 tracking-wider text-center drop-shadow-lg">{categories.find(c => c.key === selectedCategory)?.label} Settings</h1>
+            {renderSettings()}
+            <div className="flex justify-end mt-10">
+              <button
+                onClick={() => navigate('/home')}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-xl text-lg font-bold shadow-lg transition-colors"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
   );
 };

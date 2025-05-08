@@ -78,7 +78,6 @@ const Solo: React.FC = () => {
         </div>
         <div className="flex items-center space-x-4">
           <Link to="/home" className="text-gray-300 hover:text-white">Home</Link>
-          <Link to="/profile" className="text-gray-300 hover:text-white">Profile</Link>
           <Link to="/library" className="text-gray-300 hover:text-white">Library</Link>
           <Link to="/settings" className="text-gray-300 hover:text-white">Settings</Link>
           <Link to="/" className="text-gray-300 hover:text-white">Logout</Link>
@@ -151,17 +150,28 @@ const Solo: React.FC = () => {
               {/* Preview of selected playlist */}
               {selectedPlaylist && (
                 <div className="mt-4 flex justify-center">
-                  <div className="flex items-center bg-gray-700 rounded-lg p-3 w-full">
-                    <div className={`w-12 h-12 rounded-md bg-gradient-to-br ${presetPlaylists.find(p => p.id === selectedPlaylist)?.color} flex items-center justify-center mr-3`}>
-                      <img 
-                        src="/assets/icons/music-note.svg" 
-                        alt="Music" 
-                        className="h-6 w-6 text-white opacity-75"
-                      />
+                  <div className="flex items-center justify-between bg-gray-700 rounded-lg p-3 w-full">
+                    <div className="flex items-center">
+                      <div className={`w-12 h-12 rounded-md bg-gradient-to-br ${presetPlaylists.find(p => p.id === selectedPlaylist)?.color} flex items-center justify-center mr-3`}>
+                        <img 
+                          src="/assets/icons/music-note.svg" 
+                          alt="Music" 
+                          className="h-6 w-6 text-white opacity-75"
+                        />
+                      </div>
+                      <div>
+                        <p className="font-medium text-white">{presetPlaylists.find(p => p.id === selectedPlaylist)?.name}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-white">{presetPlaylists.find(p => p.id === selectedPlaylist)?.name}</p>
-                    </div>
+                    <button
+                      onClick={() => navigate(`/leaderboard/${selectedPlaylist}`)}
+                      className="flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+                    >
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      Leaderboard
+                    </button>
                   </div>
                 </div>
               )}
