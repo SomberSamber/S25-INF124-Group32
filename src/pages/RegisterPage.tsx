@@ -1,26 +1,68 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  const { signUp } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Check if passwords match
-    if (password !== confirmPassword) {
-      alert('Passwords do not match');
+    
+    if (!email || !username || !password || !confirmPassword) {
+      setError('Please fill in all fields');
       return;
     }
-    // Handle registration logic here
-    console.log('Registration with:', email, username, password);
+    
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    try {
+      setError('');
+      setLoading(true);
+      
+      console.log('Attempting to register with:', email, username);
+      const { error } = await signUp(email, password, username);
+      
+      if (error) {
+        setError(error);
+        console.error('Registration error:', error);
+      } else {
+        console.log('Registration successful! Navigating to home...');
+        navigate('/home');
+      }
+    } catch (err) {
+      console.error('Unexpected error during registration:', err);
+      setError('Failed to create account');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="flex flex-col items-center justify-center w-full max-w-md px-4 py-8 mx-auto">
       <h1 className="mb-8 text-4xl font-bold text-white text-center">Create an Account</h1>
+      
+      {error && (
+        <div className="w-full p-3 mb-4 text-red-700 bg-red-100 border border-red-300 rounded-lg">
+          {error}
+        </div>
+      )}
       
       <form onSubmit={handleSubmit} className="w-full space-y-4">
         <div>
@@ -85,9 +127,10 @@ const RegisterPage: React.FC = () => {
         
         <button
           type="submit"
-          className="w-full px-4 py-2 mt-2 font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-space-purple-600 focus:ring-opacity-50"
+          disabled={loading}
+          className="w-full px-4 py-2 mt-2 font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-space-purple-600 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Register
+          {loading ? 'Creating Account...' : 'Register'}
         </button>
       </form>
       

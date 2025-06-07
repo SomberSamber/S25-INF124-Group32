@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import UserStatus from '../components/UserStatus';
 
 const HomePage: React.FC = () => {
   return (
@@ -17,8 +18,7 @@ const HomePage: React.FC = () => {
           <Link to="/home" className="text-gray-300 hover:text-white font-bold border-b-2 border-purple-500">Home</Link>
           <Link to="/library" className="text-gray-300 hover:text-white">Library</Link>
           <Link to="/settings" className="text-gray-300 hover:text-white">Settings</Link>
-          <Link to="/" className="text-gray-300 hover:text-white">Logout</Link>
-
+          <UserStatus />
         </div>
       </header>
       
@@ -60,7 +60,7 @@ const HomePage: React.FC = () => {
             />
           </svg>
         </div>
-        
+
         {/* Game mode buttons */}
         <div className="flex justify-center space-x-6 mb-8">
           <Link to="/game/solo" className="w-44">
