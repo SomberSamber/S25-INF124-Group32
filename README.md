@@ -1,46 +1,128 @@
-# Getting Started with Create React App
+# MusikMatch 🎵
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A dynamic music guessing game built with React and TypeScript that challenges players to identify songs from YouTube audio clips. Features both solo and multiplayer modes with real-time gameplay and comprehensive scoring systems.
 
-## Available Scripts
+## 🎮 Features
 
-In the project directory, you can run:
+### Game Modes
+- **Solo Mode**: Individual gameplay with customizable timer settings (30s or 60s per game)
+- **Multiplayer Mode**: Buzzer based  gameplay with up to 4 players
+  - Assigned key bindings for each player to buzz in
+  - Live scoreboard with real-time updates
+  - Round based gameplay with configurable rounds
 
-### `npm start`
+### Gameplay Features
+- **YouTube Audio Integration**: Seamless audio playback from YouTube videos
+- **Smart Autocomplete**: Intelligent song suggestion dropdown that searches:
+  - Song titles
+  - Artist names
+  - Combined song and artist matches
+  - Keyboard navigation support (arrow keys, Enter, Escape)
+- **Real-time Timer**: Visual countdown timer with color-coded alerts
+  - Green: >30 seconds remaining
+  - Yellow: 11-30 seconds remaining  
+  - Red: ≤10 seconds with pulse animation
+- **Banner Feedback System**: Animated feedback for correct/incorrect answers
+  - Green banner with checkmark for correct answers
+  - Red banner with X for incorrect answers
+  - Auto-hide after 3 seconds
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Results & Analytics
+- **Comprehensive End Screen**: Detailed game results showing:
+  - Song by song breakdown with correct/incorrect status
+  - Player's actual guesses vs. correct answers
+- **Multiplayer Rankings**: Final standings with winner detection and tie handling
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### User Management
+- **Firebase Authentication**: Secure user registration and login
+- **User Profiles**: Individual user accounts and settings
 
-### `npm test`
+### Music Library Management
+- **Playlist Integration**: Custom playlist creation and management
+- **Library Page**: Browse and organize music collections
+- **Playlist Import**: Import playlists from various sources
+- **Admin Panel**: Administrative controls for playlist and user management
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Settings & Customization
+- **User Settings**: Account management (username, email, password)
+- **Game Preferences**: Customizable game options
+- **Display Settings**: UI and theme customization options
 
-### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🚀 Getting Started
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## DEPLOYMENT [NO INSTALLATION]
+1. Webapp deployed at:
+    https://musikmatch.vercel.app/
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Prerequisites
+- Node.js (v16 or higher)
+- npm or yarn package manager
+- Firebase project with Firestore and Authentication enabled
 
-### `npm run eject`
+### Installation
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+1. Clone the repository:
+```bash
+git clone https://github.com/SomberSamber/S25-INF124-Group32
+cd musikmatch
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+2. Install dependencies:
+```bash
+npm install
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+3. Build Tailwind CSS:
+```bash
+npm run tailwind:build
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+4. Start the development server:
+```bash
+npm start
+```
 
-## Learn More
+5. Open [http://localhost:3000](http://localhost:3000) to view the app in your browser.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Available Scripts
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- `npm start` - Runs the app in development mode with Tailwind CSS build
+- `npm run build` - Builds the app for production with optimized Tailwind CSS
+- `npm test` - Launches the test runner
+- `npm run tailwind:build` - Builds Tailwind CSS manually
+
+## 🎯 How to Play
+
+### Solo Mode
+1. Navigate to the game section and select "Solo Play"
+2. Choose your preferred game duration (30s or 60s)
+3. Listen to the audio clip and type your guess
+4. Use the autocomplete dropdown for quick song selection
+5. Submit answers before the timer runs out
+6. View your detailed results at the end
+
+### Multiplayer Mode
+1. Set up a multiplayer game and configure the number of rounds
+2. Assign keys to each player for buzzing in
+3. When a song plays, be the first to buzz in using your assigned key
+4. If you buzz in first, you get to answer
+5. Wrong answers pass to the next player who buzzed in
+6. Points are awarded for correct answers
+7. View final rankings when all rounds are complete
+
+## API 
+ 1. Youtube API was used to be able import playlists into the firebase
+
+## 10 Features
+ 1. Sign Up
+ 2. Log In
+ 3. Solo Mode
+ 4. Multiplayer Mode
+ 5. Playlist Selection
+ 6. Library Page
+ 7. Importing Playlists
+ 8. Previewing Playlists
+ 9. Settings Page
+10. Admin Page
+
