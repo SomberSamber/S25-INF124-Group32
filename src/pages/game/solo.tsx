@@ -1,24 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { getPresetPlaylists, PresetPlaylist } from '../../lib/presetPlaylists';
+import { getUserPlaylists, UserPlaylist } from '../../lib/userPlaylists';
 
 const Solo: React.FC = () => {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [duration, setDuration] = useState<30 | 60>(30);
-  const [selectedPlaylist, setSelectedPlaylist] = useState<number | null>(null);
+  const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null);
+  const [selectedPlaylistType, setSelectedPlaylistType] = useState<'preset' | 'user' | null>(null);
   const [isInstructionsOpen, setIsInstructionsOpen] = useState(false);
   const [playlistError, setPlaylistError] = useState<string | null>(null);
   
-  // Mock data for preset playlists - this should be consistent with what's in the LibraryPage
-  const presetPlaylists = [
-    { id: 1, name: 'Pop Hits', color: 'from-pink-500 to-purple-500', coverImage: '/assets/covers/pop.jpg' },
-    { id: 2, name: 'Rock Classics', color: 'from-red-500 to-orange-500', coverImage: '/assets/covers/rock.jpg' },
-    { id: 3, name: 'Rap Essentials', color: 'from-yellow-500 to-green-500', coverImage: '/assets/covers/rap.jpg' },
-    { id: 4, name: '80s Throwbacks', color: 'from-blue-500 to-indigo-500', coverImage: '/assets/covers/80s.jpg' },
-    { id: 5, name: '90s Nostalgia', color: 'from-indigo-500 to-purple-500', coverImage: '/assets/covers/90s.jpg' },
-    { id: 6, name: '2000s Hits', color: 'from-purple-500 to-pink-500', coverImage: '/assets/covers/2000s.jpg' },
-    { id: 7, name: 'Country Favorites', color: 'from-amber-500 to-orange-600', coverImage: '/assets/covers/country.jpg' },
-    { id: 8, name: 'Disney Songs', color: 'from-blue-400 to-indigo-400', coverImage: '/assets/covers/disney.jpg' },
-  ];
+  // Playlist data from Firebase
+  const [presetPlaylists, setPresetPlaylists] = useState<PresetPlaylist[]>([]);
+  const [userPlaylists, setUserPlaylists] = useState<UserPlaylist[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userLoading, setUserLoading] = useState(true);
+
+  // Load preset playlists from Firebase
+  useEffect(() => {
+    const loadPresetPlaylists = async () => {
+      try {
+        setLoading(true);
+        const fetchedPlaylists = await getPresetPlaylists();
+        setPresetPlaylists(fetchedPlaylists);
+      } catch (error) {
+        console.error('Error loading preset playlists:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPresetPlaylists();
+  }, []);
+
+  // Load user playlists from Firebase
+  useEffect(() => {
+    const loadUserPlaylists = async () => {
+      if (!currentUser) {
+        setUserPlaylists([]);
+        setUserLoading(false);
+        return;
+      }
+
+      try {
+        setUserLoading(true);
+        const fetchedUserPlaylists = await getUserPlaylists(currentUser.uid);
+        setUserPlaylists(fetchedUserPlaylists);
+      } catch (error) {
+        console.error('Error loading user playlists:', error);
+      } finally {
+        setUserLoading(false);
+      }
+    };
+
+    loadUserPlaylists();
+  }, [currentUser]);
 
   // Handle starting the game
   const handleStartGame = () => {
@@ -35,14 +74,24 @@ const Solo: React.FC = () => {
     // Clear any previous errors
     setPlaylistError(null);
     
-    // In a real implementation, we would pass these parameters to the game page
-    // For now, we'll just navigate to a dummy game page
+    // Find the selected playlist name
+    let playlistName = '';
+    if (selectedPlaylistType === 'preset') {
+      const playlist = presetPlaylists.find(p => p.id === selectedPlaylist);
+      playlistName = playlist?.name || 'Unknown Playlist';
+    } else if (selectedPlaylistType === 'user') {
+      const playlist = userPlaylists.find(p => p.id === selectedPlaylist);
+      playlistName = playlist?.name || 'Unknown Playlist';
+    }
+    
+    // Navigate to game play page with parameters
     navigate('/game/play', { 
       state: { 
         mode: 'solo',
         duration,
         playlistId: selectedPlaylist,
-        playlistName: presetPlaylists.find(p => p.id === selectedPlaylist)?.name
+        playlistName,
+        playlistType: selectedPlaylistType
       } 
     });
   };
@@ -59,18 +108,48 @@ const Solo: React.FC = () => {
 
   // Handle playlist selection change
   const handlePlaylistChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = parseInt(e.target.value);
-    setSelectedPlaylist(value);
+    const value = e.target.value;
+    if (value === '') {
+      setSelectedPlaylist(null);
+      setSelectedPlaylistType(null);
+    } else {
+      const [type, id] = value.split(':');
+      setSelectedPlaylist(id);
+      setSelectedPlaylistType(type as 'preset' | 'user');
+    }
     // Clear error when user selects a playlist
     setPlaylistError(null);
   };
+
+  // Handle viewing leaderboard for preset playlists
+  const handleViewLeaderboard = () => {
+    if (selectedPlaylist && selectedPlaylistType === 'preset') {
+      // TODO: Navigate to leaderboard page for this playlist
+      console.log('View leaderboard for playlist:', selectedPlaylist);
+      alert('Leaderboard feature coming soon!');
+    }
+  };
+
+  // Get selected playlist details for preview
+  const getSelectedPlaylistDetails = () => {
+    if (!selectedPlaylist || !selectedPlaylistType) return null;
+
+    if (selectedPlaylistType === 'preset') {
+      return presetPlaylists.find(p => p.id === selectedPlaylist);
+    } else if (selectedPlaylistType === 'user') {
+      return userPlaylists.find(p => p.id === selectedPlaylist);
+    }
+    return null;
+  };
+
+  const selectedPlaylistDetails = getSelectedPlaylistDetails();
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* Header navigation */}
       <header className="relative z-10 w-full flex justify-between items-center p-4 border-b border-gray-800">
         <div className="flex items-center">
-          <Link to="/">
+          <Link to="/home">
             <div className="text-purple-400 font-bold text-2xl">
               MusikMatch
             </div>
@@ -78,7 +157,6 @@ const Solo: React.FC = () => {
         </div>
         <div className="flex items-center space-x-4">
           <Link to="/home" className="text-gray-300 hover:text-white">Home</Link>
-          <Link to="/profile" className="text-gray-300 hover:text-white">Profile</Link>
           <Link to="/library" className="text-gray-300 hover:text-white">Library</Link>
           <Link to="/settings" className="text-gray-300 hover:text-white">Settings</Link>
           <Link to="/" className="text-gray-300 hover:text-white">Logout</Link>
@@ -122,14 +200,41 @@ const Solo: React.FC = () => {
                   className={`block appearance-none w-full bg-gray-700 border text-white py-3 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-gray-600 ${
                     playlistError ? 'border-red-500 focus:border-red-500' : 'border-gray-600 focus:border-purple-500'
                   }`}
-                  value={selectedPlaylist || ''}
+                  value={selectedPlaylist && selectedPlaylistType ? `${selectedPlaylistType}:${selectedPlaylist}` : ''}
                   onChange={handlePlaylistChange}
                   aria-invalid={playlistError ? 'true' : 'false'}
+                  disabled={loading && userLoading}
                 >
-                  <option value="" disabled>Choose a playlist</option>
-                  {presetPlaylists.map(playlist => (
-                    <option key={playlist.id} value={playlist.id}>{playlist.name}</option>
-                  ))}
+                  <option value="" disabled>
+                    {loading || userLoading ? 'Loading playlists...' : 'Choose a playlist'}
+                  </option>
+                  
+                  {/* Preset Playlists */}
+                  {presetPlaylists.length > 0 && (
+                    <optgroup label="Featured Playlists">
+                      {presetPlaylists.map(playlist => (
+                        <option key={`preset:${playlist.id}`} value={`preset:${playlist.id}`}>
+                          {playlist.name} ({playlist.genre})
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  
+                  {/* User Playlists */}
+                  {userPlaylists.length > 0 && (
+                    <optgroup label="Your Imported Playlists">
+                      {userPlaylists.map(playlist => (
+                        <option key={`user:${playlist.id}`} value={`user:${playlist.id}`}>
+                          {playlist.name} ({playlist.source})
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  
+                  {/* Show message if no playlists available */}
+                  {!loading && !userLoading && presetPlaylists.length === 0 && userPlaylists.length === 0 && (
+                    <option value="" disabled>No playlists available</option>
+                  )}
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-white">
                   <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -149,19 +254,44 @@ const Solo: React.FC = () => {
               )}
               
               {/* Preview of selected playlist */}
-              {selectedPlaylist && (
+              {selectedPlaylistDetails && (
                 <div className="mt-4 flex justify-center">
                   <div className="flex items-center bg-gray-700 rounded-lg p-3 w-full">
-                    <div className={`w-12 h-12 rounded-md bg-gradient-to-br ${presetPlaylists.find(p => p.id === selectedPlaylist)?.color} flex items-center justify-center mr-3`}>
-                      <img 
-                        src="/assets/icons/music-note.svg" 
-                        alt="Music" 
-                        className="h-6 w-6 text-white opacity-75"
-                      />
+                    <div className="w-12 h-12 rounded-md bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center mr-3">
+                      {selectedPlaylistDetails.coverImageUrl ? (
+                        <img 
+                          src={selectedPlaylistDetails.coverImageUrl} 
+                          alt="Playlist Cover" 
+                          className="w-full h-full object-cover rounded-md"
+                        />
+                      ) : (
+                        <img 
+                          src="/assets/icons/music-note.svg" 
+                          alt="Music" 
+                          className="h-6 w-6 text-white opacity-75"
+                        />
+                      )}
                     </div>
-                    <div>
-                      <p className="font-medium text-white">{presetPlaylists.find(p => p.id === selectedPlaylist)?.name}</p>
+                    <div className="flex-1">
+                      <p className="font-medium text-white">{selectedPlaylistDetails.name}</p>
+                      <p className="text-sm text-gray-400">
+                        {'genre' in selectedPlaylistDetails 
+                          ? selectedPlaylistDetails.genre 
+                          : `${selectedPlaylistDetails.source} Import`}
+                      </p>
                     </div>
+                    {/* Show leaderboard button for preset playlists */}
+                    {selectedPlaylistType === 'preset' && (
+                      <button
+                        onClick={handleViewLeaderboard}
+                        className="ml-3 px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white text-sm rounded-lg transition-colors flex items-center"
+                      >
+                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 1L3 7v10a2 2 0 002 2h10a2 2 0 002-2V7l-7-6zM8 15V9h4v6H8z" clipRule="evenodd" />
+                        </svg>
+                        Leaderboard
+                      </button>
+                    )}
                   </div>
                 </div>
               )}

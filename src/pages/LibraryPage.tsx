@@ -1,25 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { getPresetPlaylists, PresetPlaylist } from '../lib/presetPlaylists';
+import { getUserPlaylists, UserPlaylist } from '../lib/userPlaylists';
+import PlaylistModal from '../components/PlaylistModal';
+import PlaylistImporter from '../components/PlaylistImporter';
 
 const LibraryPage: React.FC = () => {
+  const { currentUser } = useAuth();
+  
   // State for modal visibility and content type
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'genre' | 'user'>('genre');
   
-  // Mock data for preset playlists
-  const presetPlaylists = [
-    { id: 1, name: 'Pop Hits', color: 'from-pink-500 to-purple-500', coverImage: '/assets/covers/pop.jpg' },
-    { id: 2, name: 'Rock Classics', color: 'from-red-500 to-orange-500', coverImage: '/assets/covers/rock.jpg' },
-    { id: 3, name: 'Rap Essentials', color: 'from-yellow-500 to-green-500', coverImage: '/assets/covers/rap.jpg' },
-    { id: 4, name: '80s Throwbacks', color: 'from-blue-500 to-indigo-500', coverImage: '/assets/covers/80s.jpg' },
-    { id: 5, name: '90s Nostalgia', color: 'from-indigo-500 to-purple-500', coverImage: '/assets/covers/90s.jpg' },
-    { id: 6, name: '2000s Hits', color: 'from-purple-500 to-pink-500', coverImage: '/assets/covers/2000s.jpg' },
-    { id: 7, name: 'Country Favorites', color: 'from-amber-500 to-orange-600', coverImage: '/assets/covers/country.jpg' },
-    { id: 8, name: 'Disney Songs', color: 'from-blue-400 to-indigo-400', coverImage: '/assets/covers/disney.jpg' },
-  ];
+  // State for playlist modal
+  const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
+  const [selectedPlaylist, setSelectedPlaylist] = useState<PresetPlaylist | UserPlaylist | null>(null);
   
-  // User playlists will be imported from third party services
-  const userPlaylists: any[] = [];
+  // State for import modal
+  const [isImporterOpen, setIsImporterOpen] = useState(false);
+  
+  // Real data from Firebase
+  const [presetPlaylists, setPresetPlaylists] = useState<PresetPlaylist[]>([]);
+  const [userPlaylists, setUserPlaylists] = useState<UserPlaylist[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userLoading, setUserLoading] = useState(true);
+
+  // Load preset playlists from Firebase
+  useEffect(() => {
+    const loadPlaylists = async () => {
+      try {
+        setLoading(true);
+        const fetchedPlaylists = await getPresetPlaylists();
+        setPresetPlaylists(fetchedPlaylists);
+      } catch (error) {
+        console.error('Error loading playlists:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPlaylists();
+  }, []);
+
+  // Load user playlists from Firebase
+  useEffect(() => {
+    const loadUserPlaylists = async () => {
+      if (!currentUser?.uid) {
+        setUserLoading(false);
+        return;
+      }
+      
+      try {
+        setUserLoading(true);
+        const fetchedUserPlaylists = await getUserPlaylists(currentUser.uid);
+        setUserPlaylists(fetchedUserPlaylists);
+      } catch (error) {
+        console.error('Error loading user playlists:', error);
+      } finally {
+        setUserLoading(false);
+      }
+    };
+
+    loadUserPlaylists();
+  }, [currentUser?.uid]);
 
   // Function to open modal with the specified type
   const openModal = (type: 'genre' | 'user') => {
@@ -32,6 +76,18 @@ const LibraryPage: React.FC = () => {
     setIsModalOpen(false);
   };
 
+  // Function to open playlist modal
+  const openPlaylistModal = (playlist: PresetPlaylist | UserPlaylist) => {
+    setSelectedPlaylist(playlist);
+    setIsPlaylistModalOpen(true);
+  };
+
+  // Function to close playlist modal
+  const closePlaylistModal = () => {
+    setIsPlaylistModalOpen(false);
+    setSelectedPlaylist(null);
+  };
+
   // Get current playlist data based on modal type
   const getCurrentPlaylists = () => {
     return modalType === 'genre' ? presetPlaylists : userPlaylists;
@@ -42,14 +98,26 @@ const LibraryPage: React.FC = () => {
     return modalType === 'genre' ? 'Genre Playlists' : 'Your Playlists';
   };
 
-  // Function to handle adding a new playlist (placeholder for now)
+  // Function to handle adding a new playlist
   const handleAddPlaylist = () => {
-    alert('This feature will connect to third-party music services to import playlists.');
-    // Future implementation: Open a dialog to connect with Spotify, Apple Music, etc.
+    setIsImporterOpen(true);
+  };
+
+  // Function to handle import completion
+  const handleImportComplete = async (playlistId: string) => {
+    // Refresh user playlists
+    if (!currentUser?.uid) return;
+    
+    try {
+      const fetchedUserPlaylists = await getUserPlaylists(currentUser.uid);
+      setUserPlaylists(fetchedUserPlaylists);
+    } catch (error) {
+      console.error('Error refreshing user playlists:', error);
+    }
   };
 
   // Rendering a playlist tile (used in both carousel and grid)
-  const renderPlaylistTile = (playlist: any, size: 'small' | 'large' = 'large') => {
+  const renderPlaylistTile = (playlist: PresetPlaylist | UserPlaylist, size: 'small' | 'large' = 'large') => {
     const tileClasses = size === 'large' 
       ? "flex-shrink-0 w-48 h-64 rounded-lg overflow-hidden cursor-pointer transition-transform transform hover:scale-105" 
       : "w-36 h-52 rounded-lg overflow-hidden cursor-pointer transition-transform transform hover:scale-105";
@@ -57,13 +125,52 @@ const LibraryPage: React.FC = () => {
     const iconSize = size === 'large' ? "h-16 w-16" : "h-12 w-12";
     const imgHeight = size === 'large' ? "h-48" : "h-36";
     
+    // Get gradient colors based on genre or source
+    const getGradientColors = (playlist: PresetPlaylist | UserPlaylist) => {
+      if ('genre' in playlist) {
+        // PresetPlaylist
+        switch (playlist.genre.toLowerCase()) {
+          case 'pop': return 'from-pink-500 to-purple-500';
+          case 'rock': return 'from-red-500 to-orange-500';
+          case 'rap':
+          case 'hip hop': return 'from-yellow-500 to-green-500';
+          case '90s': return 'from-indigo-500 to-purple-600';
+          case '2000s': return 'from-cyan-500 to-blue-600';
+          case 'disney': return 'from-pink-400 to-rose-500';
+          case 'country': return 'from-amber-500 to-orange-600';
+          case 'electronic': return 'from-blue-500 to-indigo-500';
+          default: return 'from-purple-500 to-indigo-500';
+        }
+      } else {
+        // UserPlaylist
+        switch (playlist.source) {
+          case 'spotify': return 'from-green-500 to-emerald-500';
+          case 'youtube': return 'from-red-500 to-pink-500';
+          default: return 'from-gray-500 to-slate-500';
+        }
+      }
+    };
+    
+    const getDisplayGenre = (playlist: PresetPlaylist | UserPlaylist) => {
+      if ('genre' in playlist) {
+        return playlist.genre;
+      } else {
+        return playlist.source === 'spotify' ? 'Spotify' : 
+               playlist.source === 'youtube' ? 'YouTube' : 'Custom';
+      }
+    };
+    
     return (
-      <div key={playlist.id} className={tileClasses}>
-        <div className={`w-full ${imgHeight} bg-gradient-to-br ${playlist.color} flex items-center justify-center relative`}>
+      <div 
+        key={playlist.id} 
+        className={tileClasses}
+        onClick={() => openPlaylistModal(playlist)}
+      >
+        <div className={`w-full ${imgHeight} bg-gradient-to-br ${getGradientColors(playlist)} flex items-center justify-center relative`}>
           {/* If cover image exists, display it */}
-          {playlist.coverImage && (
+          {playlist.coverImageUrl && (
             <img 
-              src={playlist.coverImage} 
+              src={playlist.coverImageUrl} 
               alt={playlist.name}
               className="absolute inset-0 w-full h-full object-cover"
               onError={(e) => {
@@ -73,14 +180,17 @@ const LibraryPage: React.FC = () => {
             />
           )}
           {/* Fallback to gradient with music icon */}
-          <img 
-            src="/assets/icons/music-note.svg" 
-            alt="Music" 
+          <svg 
             className={`${iconSize} text-white opacity-75 z-10`}
-          />
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+          </svg>
         </div>
         <div className="p-3 bg-gray-800">
           <h3 className="font-medium text-sm">{playlist.name}</h3>
+          <p className="text-xs text-gray-400">{getDisplayGenre(playlist)}</p>
         </div>
       </div>
     );
@@ -167,6 +277,7 @@ const LibraryPage: React.FC = () => {
           Your Music Library
         </h1>
         
+       
         {/* Genre Playlists Section */}
         <section className="mb-12">
           <div className="flex justify-between items-center mb-4">
@@ -181,7 +292,27 @@ const LibraryPage: React.FC = () => {
           
           <div className="overflow-x-auto pb-4 custom-scrollbar">
             <div className="flex space-x-4" style={{ minWidth: 'max-content' }}>
-              {presetPlaylists.map(playlist => renderPlaylistTile(playlist))}
+              {loading ? (
+                // Loading skeleton
+                Array.from({ length: 4 }).map((_, index) => (
+                  <div key={index} className="flex-shrink-0 w-48 h-64 rounded-lg overflow-hidden bg-gray-800 animate-pulse">
+                    <div className="w-full h-48 bg-gray-700"></div>
+                    <div className="p-3">
+                      <div className="h-4 bg-gray-700 rounded mb-2"></div>
+                      <div className="h-3 bg-gray-700 rounded w-2/3"></div>
+                    </div>
+                  </div>
+                ))
+              ) : presetPlaylists.length === 0 ? (
+                <div className="flex items-center justify-center w-full py-12">
+                  <div className="text-center">
+                    <p className="text-gray-400 mb-2">No playlists available</p>
+                    <p className="text-gray-500 text-sm">Upload some playlists in the admin panel</p>
+                  </div>
+                </div>
+              ) : (
+                presetPlaylists.map(playlist => renderPlaylistTile(playlist))
+              )}
             </div>
           </div>
         </section>
@@ -249,10 +380,27 @@ const LibraryPage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
-};
+                  </div>
+        )}
+
+        {/* Playlist Modal */}
+        <PlaylistModal
+          playlist={selectedPlaylist}
+          isOpen={isPlaylistModalOpen}
+          onClose={closePlaylistModal}
+          userId={currentUser?.uid || ''}
+        />
+
+        {/* Playlist Importer */}
+        {isImporterOpen && currentUser?.uid && (
+          <PlaylistImporter
+            userId={currentUser.uid}
+            onImportComplete={handleImportComplete}
+            onClose={() => setIsImporterOpen(false)}
+          />
+        )}
+      </div>
+    );
+  };
 
 export default LibraryPage; 

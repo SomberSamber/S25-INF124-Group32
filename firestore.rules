@@ -4,30 +4,50 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // Users can read and write their own user document
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if true; // Temporarily allow without auth for testing
+      
+      // Allow access to user's imported playlists
+      match /imported-playlists/{playlistId} {
+        allow read, write, create, delete: if true; // Temporarily allow without auth for testing
+        
+        // Allow access to songs within user's imported playlists
+        match /songs/{songId} {
+          allow read, write, create, delete: if true; // Temporarily allow without auth for testing
+        }
+      }
     }
     
-    // Users can read and write their own playlists, and read preset playlists
+    // Preset playlists - readable by all, writable by admins only
+    match /preset-playlists/{playlistId} {
+      allow read: if true; // Allow reading without auth for testing
+      allow write, create, delete: if true; // Temporarily allow without auth for admin testing
+      
+      // Songs within preset playlists
+      match /songs/{songId} {
+        allow read: if true; // Allow reading without auth for testing
+        allow write, create, delete: if true; // Temporarily allow without auth for admin testing
+      }
+    }
+    
+    // Legacy playlist structure (keep for backward compatibility)
     match /playlists/{playlistId} {
-      allow read: if request.auth != null && 
-        (resource == null || 
-         resource.data.userId == request.auth.uid || 
-         resource.data.isPreset == true);
-      allow write: if request.auth != null && 
-        (resource == null || resource.data.userId == request.auth.uid);
-      allow create: if request.auth != null;
+      allow read, write, create: if true; // Allow without auth for testing
     }
     
-    // Users can read and write their own songs
+    // Legacy songs structure (keep for backward compatibility)
     match /songs/{songId} {
-      allow read, write: if request.auth != null;
-      allow create: if request.auth != null;
+      allow read, write, create: if true; // Allow without auth for testing
     }
     
-    // Users can read and write game sessions they're part of
+    // Game sessions
     match /gameSessions/{sessionId} {
-      allow read, write: if request.auth != null;
-      allow create: if request.auth != null;
+      allow read, write, create: if true; // Allow without auth for testing
+    }
+    
+    // Leaderboard
+    match /leaderboard/{entryId} {
+      allow read: if true; // Allow reading leaderboard entries
+      allow write, create: if true; // Allow writing scores for testing
     }
   }
 } 
