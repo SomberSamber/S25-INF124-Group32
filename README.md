@@ -40,7 +40,7 @@ A dynamic music guessing game built with React and TypeScript that challenges pl
 ### Music Library Management
 - **Playlist Integration**: Custom playlist creation and management
 - **Library Page**: Browse and organize music collections
-- **Playlist Import**: Import playlists from various sources
+- **Playlist Import**: Import public playlists from Youtube
 - **Admin Panel**: Administrative controls for playlist and user management
 
 ### Settings & Customization
@@ -119,7 +119,7 @@ npm start
 7. View final rankings when all rounds are complete
 
 ## API 
- 1. Youtube API was used to be able import playlists into the firebase
+ 1. Youtube API was used to be able to import playlists into the firebase
 
 ## 10 Features
  1. Sign Up
