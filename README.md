@@ -51,9 +51,16 @@ A dynamic music guessing game built with React and TypeScript that challenges pl
 
 ## 🚀 Getting Started
 
-## DEPLOYMENT [NO INSTALLATION]
-1. Webapp deployed at:
-    https://musikmatch.vercel.app/
+
+
+## 1. DEPLOYMENT [NO INSTALLATION]
+1. Webapp deployed at. To access it go to this link:
+   https://musikmatch.vercel.app/
+   https://musikmatch.vercel.app/
+   https://musikmatch.vercel.app/
+   https://musikmatch.vercel.app/
+   https://musikmatch.vercel.app/
+   
 
 ### Prerequisites
 - Node.js (v16 or higher)
